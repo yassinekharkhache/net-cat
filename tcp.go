@@ -47,7 +47,7 @@ func main() {
 
 func writeOldMessages(name string) {
 	for _, message := range messages {
-		printMessage([]byte(message), name)
+		print_Message_to_con([]byte(message), name)
 	}
 }
 
@@ -73,4 +73,14 @@ func printMessage(msg []byte, name string) {
 		if Name == name {continue}
 		con.Write([]byte(message))
 	}
+}
+
+func print_Message_to_con(msg []byte, name string) {
+	msg = append(msg, '\n')
+	year, month, day := time.Now().Date()
+	hour, min, sec:= time.Now().Clock()
+	message := fmt.Sprintf("[%d-%s-%d %d:%d:%d]%s", year, month, day, hour, min, sec, msg)
+	con := Conns[name]
+	con.Write([]byte(message))
+		
 }
