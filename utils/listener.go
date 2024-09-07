@@ -35,23 +35,31 @@ func (Server *Servers) AcceptConnections(listner net.Listener) {
 		}
 		// accept the connexion and ask the user for his name
 		con, err := listner.Accept()
-		Name := make([]byte, 1024)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
+		Name := make([]byte, 1024)
 		Server.Mutex.Lock()
 		con.Write(Server.HelloMessage)
 		Server.Mutex.Unlock()
 		i, err := con.Read(Name)
-		if err != nil {
+		if err != nil || i == 1 {
+			if err != nil {
+				fmt.Println("Error reading name:", err)
+			}
+			if len(Name[:i]) == 1 {
+				errorMsg := "Invalid name. Connection will be closed.\n"
+				con.Write([]byte(errorMsg))
+			}
+			con.Close()
 			continue
 		}
 		// casse the name until the newline
 		Name = Name[:i-1]
 		// add the user to the  connection map
+		Server.writeOldMessages(string(Name))
 		Server.Conns[string(Name)] = con
-		go Server.writeOldMessages(string(Name))
 		// inform all the participates in the chat that the user entered
 		msg := []byte(fmt.Sprintf("%s enter the chat\n", Name))
 		Server.Mutex.Lock()

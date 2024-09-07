@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Create new Socket
-	Port := "2525"
+	Port := "8989"
 	if len(os.Args) > 2 {
 		fmt.Println(netcat.Usage)
 		return
