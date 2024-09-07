@@ -23,6 +23,7 @@ func formatMessages(name, text string) []byte {
 	return []byte(fmt.Sprintf("[%d-%s-%d %d:%d:%d]%s", year, month, day, hour, min, sec, msg))
 }
 
+//that function handle the connextion for a single user by his name
 func con_handler(name string) {
 	Conn := Server.Conns[name]
 	scanner := bufio.NewScanner(Conn)
@@ -31,12 +32,12 @@ func con_handler(name string) {
 		Server.Messages = append(Server.Messages, msg)
 		go printMessage([]byte(msg), name)
 	}
-	// deleteUser(Conn)
 	deleteConnection(Conn)
 	delete(Server.Conns, name)
 	printMessage([]byte(fmt.Sprintf("%s left the chat\n", name)), name)
 }
 
+//delete the connection from the array
 func deleteConnection(Conn net.Conn) {
 	for i, con := range Server.Users {
 		if con == Conn && i != len(Server.Users) {
@@ -48,6 +49,7 @@ func deleteConnection(Conn net.Conn) {
 	}
 }
 
+// print the the message to the other users
 func printMessage(msg []byte, name string) {
 	for Name, con := range Server.Conns {
 		if Name == name {
@@ -57,6 +59,7 @@ func printMessage(msg []byte, name string) {
 	}
 }
 
+//print message to a specific user
 func print_Message_to_con(msg []byte, name string) {
 	con := Server.Conns[name]
 	con.Write(msg)

@@ -16,12 +16,12 @@ func main() {
 		return
 	}
 	defer listner.Close()
-	// Set the hellow message
+	// Set the hello message
 	netcat.Server.HelloMessage, err = os.ReadFile("linuxHello.txt")
 	if err != nil {
 		fmt.Println("error laoding the file")
 		return
 	}
-
+	
 	netcat.AcceptConnections(listner)
 }

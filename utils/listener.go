@@ -23,6 +23,8 @@ var Server Servers = Servers{
 	Users        :[]net.Conn{},
 	Conns        :map[string]net.Conn{},
 }
+
+// Accept the connection to the socket and redirect them. 
 func AcceptConnections(listner net.Listener) {
 	for {
 		// check if the group has a place for the user
@@ -48,11 +50,12 @@ func AcceptConnections(listner net.Listener) {
 		// inform all the participates in the chat that the user entered
 		msg := []byte(fmt.Sprintf("%s enter the chat\n", Name))
 		Server.Messages = append(Server.Messages, msg)
-		// add the user to the users slice
+		// add the user to the users slice and to the connection map
 		Server.Users = append(Server.Users, con)
 		printMessage(msg, string(Name))
 		Server.Conns[string(Name)] = con
 		writeOldMessages(string(Name))
+
 		go con_handler(string(Name))
 	}
 }
