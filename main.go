@@ -10,18 +10,30 @@ import (
 
 func main() {
 	// Create new Socket
-	listner, err := net.Listen(netcat.Method, netcat.Port)
+	Port := "2525"
+	if len(os.Args) > 2 {
+		fmt.Println(netcat.Usage)
+		return
+	}
+	if len(os.Args) == 2  && netcat.IsValidPort(os.Args[1]){
+		Port = os.Args[1]
+	}else if len(os.Args) == 2{
+		fmt.Println(netcat.Usage)
+		return
+	}
+
+	listner, err := net.Listen(netcat.Method, fmt.Sprintf(":%s", Port))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer listner.Close()
+	Server := netcat.Startserver()
 	// Set the hello message
-	netcat.Server.HelloMessage, err = os.ReadFile("linuxHello.txt")
+	Server.HelloMessage, err = os.ReadFile("linuxHello.txt")
 	if err != nil {
 		fmt.Println("error laoding the file")
 		return
 	}
-	
-	netcat.AcceptConnections(listner)
+	Server.AcceptConnections(listner)
 }
