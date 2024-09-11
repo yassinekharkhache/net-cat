@@ -1,39 +1,27 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"os"
 
-	netcat "netcat/utils"
+	netcat "nc/outils"
 )
 
 func main() {
-	// Create new Socket
-	Port := "8989"
-	if len(os.Args) > 2 {
-		fmt.Println(netcat.Usage)
+	if len(os.Args) != 2 {
 		return
 	}
-	if len(os.Args) == 2  && netcat.IsValidPort(os.Args[1]){
-		Port = os.Args[1]
-	}else if len(os.Args) == 2{
-		fmt.Println(netcat.Usage)
-		return
-	}
-
-	listner, err := net.Listen(netcat.Method, fmt.Sprintf(":%s", Port))
+	port := os.Args[1]
+	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
-	defer listner.Close()
-	Server := netcat.Startserver()
-	// Set the hello message
-	Server.HelloMessage, err = os.ReadFile("linuxHello.txt")
-	if err != nil {
-		fmt.Println("error laoding the file")
-		return
+	Server := netcat.CreateNewServer()
+	for {
+		Conn, err := l.Accept()
+		if err != nil {
+			continue
+		}
+		go Server.WelcomeToTheServer(Conn)
 	}
-	Server.AcceptConnections(listner)
 }
