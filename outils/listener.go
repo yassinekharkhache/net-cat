@@ -1,7 +1,6 @@
 package nc
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
@@ -61,20 +60,18 @@ func (s *Server) StartChat(Name, group string) {
 	Conn := s.Groups[group][Name]
 	for {
 		Conn.Write([]byte(Format("", Name)))
-		msg := make([]byte, 2048)
+		msg := make([]byte, 50)
 		index, err := Conn.Read(msg)
-		if err != nil || index == 1 || InvalidMsg(msg[:index-1]) {
-			if !bufio.NewScanner(Conn).Scan() {
-				break
-			}
-			continue
+		if err != nil || index == 1 || InvalidMsg(msg[:index-1]) || index == 50 {
+			Conn.Write([]byte("invalid message\n Connection denied\n"))
+			return
 		}
-		if strings.HasPrefix(string(msg), "--name ") && s.invalidName(msg[7:]){
+		if strings.HasPrefix(string(msg), "--name ") && s.invalidName(msg[7:]) {
 			EditMessage := fmt.Sprintf("%s now is %s\n", Name, string(msg[7:]))
 			s.mutex.Lock()
 			delete(s.Groups[group], Name)
 			// remove the flag and the newline
-			Name = string(msg[7:len(msg)-1])
+			Name = string(msg[7 : index-1])
 			s.Groups[string(group)][Name] = Conn
 			s.mutex.Unlock()
 			s.WriteMessage(Name, group, EditMessage)
