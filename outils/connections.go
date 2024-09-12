@@ -9,10 +9,10 @@ import (
 )
 
 func (s *Server) GetUserInfo(Conn net.Conn) ([]byte, []byte, error) {
-	Name := make([]byte, 20)
-	group := make([]byte, 20)
+	Name := make([]byte, 40)
+	group := make([]byte, 40)
 	res, err := Conn.Read(Name)
-	if err != nil || res == 1 || s.invalidName(Name[:res-1]) || res == 20 {
+	if err != nil || res == 1 || s.invalidName(Name[:res-1]) || res == 40 {
 		Conn.Write([]byte("invalid name connection is closed\n"))
 		if err == nil {
 			err = errors.New("invalid name")
@@ -27,7 +27,7 @@ func (s *Server) GetUserInfo(Conn net.Conn) ([]byte, []byte, error) {
 	}
 	Conn.Write([]byte("Name Of Groupe : "))
 	res, err = Conn.Read(group)
-	if err != nil || res == 1 || s.invalidGrpoup(group[:res-1]) || res == 20 {
+	if err != nil || res == 1 || s.invalidGrpoup(group[:res-1]) || res == 40 {
 		Conn.Write([]byte("invalid group connection is closed\n"))
 		if err == nil {
 			err = errors.New("invalid group")
@@ -35,10 +35,11 @@ func (s *Server) GetUserInfo(Conn net.Conn) ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 	group = group[:res-1]
-	if len(s.Groups[string(group)]) > 2 {
+	if len(s.Groups[string(group)]) > 10 {
 		Conn.Write([]byte("Groupe already have 10 people"))
 		return nil, nil, err
 	}
+	Conn.Write([]byte("You can change your name with this flag \"--name <new name>\"\n"))
 	return Name, group, nil
 }
 

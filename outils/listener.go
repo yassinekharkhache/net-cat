@@ -37,6 +37,7 @@ func (s *Server) WelcomeToTheServer(Conn net.Conn) {
 	defer Conn.Close()
 	Conn.Write(s.HelloMsg)
 	Name, group, err := s.GetUserInfo(Conn)
+	
 	if err != nil {
 		return
 	}
