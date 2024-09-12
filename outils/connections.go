@@ -9,8 +9,8 @@ import (
 )
 
 func (s *Server) GetUserInfo(Conn net.Conn) ([]byte, []byte, error) {
-	Name := make([]byte, 50)
-	group := make([]byte, 50)
+	Name := make([]byte, 20)
+	group := make([]byte, 20)
 	res, err := Conn.Read(Name)
 	if err != nil || res == 1 || s.invalidName(Name[:res-1]) || res == 20 {
 		Conn.Write([]byte("invalid name connection is closed\n"))
@@ -27,7 +27,7 @@ func (s *Server) GetUserInfo(Conn net.Conn) ([]byte, []byte, error) {
 	}
 	Conn.Write([]byte("Name Of Groupe : "))
 	res, err = Conn.Read(group)
-	if err != nil || res == 1 || s.invalidGrpoup(group[:res-1]) || res == 50 {
+	if err != nil || res == 1 || s.invalidGrpoup(group[:res-1]) || res == 20 {
 		Conn.Write([]byte("invalid group connection is closed\n"))
 		if err == nil {
 			err = errors.New("invalid group")

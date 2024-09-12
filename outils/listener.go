@@ -60,9 +60,9 @@ func (s *Server) StartChat(Name, group string) {
 	Conn := s.Groups[group][Name]
 	for {
 		Conn.Write([]byte(Format("", Name)))
-		msg := make([]byte, 50)
+		msg := make([]byte, 200)
 		index, err := Conn.Read(msg)
-		if err != nil || index == 1 || InvalidMsg(msg[:index-1]) || index == 50 {
+		if err != nil || index == 1 || InvalidMsg(msg[:index-1]) || index == 200 {
 			Conn.Write([]byte("invalid message\n Connection denied\n"))
 			return
 		}
