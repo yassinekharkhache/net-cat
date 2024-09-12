@@ -39,6 +39,8 @@ func (s *Server) WelcomeToTheServer(Conn net.Conn) {
 	Name, group, err := s.GetUserInfo(Conn)
 	
 	if err != nil {
+		
+		Conn.(*net.TCPConn).SetLinger(0)
 		return
 	}
 	s.WriteOldMessages(Conn, string(group))
