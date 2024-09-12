@@ -8,14 +8,18 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
+	if len(os.Args) > 2 {
 		return
 	}
-	port := os.Args[1]
+	port := "8989"
+	if len(os.Args) == 2 {
+		port = os.Args[1]
+	}
 	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		panic(err)
 	}
+	defer l.Close()
 	Server := netcat.CreateNewServer()
 	for {
 		Conn, err := l.Accept()

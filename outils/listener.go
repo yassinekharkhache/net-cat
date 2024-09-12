@@ -4,31 +4,39 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
+	"strings"
 	"sync"
 )
 
 type Users map[string]net.Conn
+
+type Server struct {
+	Groups   map[string]Users
+	mutex    sync.Mutex
+	Messages map[string][]string
+	HelloMsg []byte
+}
 
 func CreateNewServer() *Server {
 	groups := make(map[string]Users, 3)
 	groups["General"] = Users{}
 	groups["Random"] = Users{}
 	groups["vip"] = Users{}
+	hellMsg, err := os.ReadFile("linuxHello.txt")
+	if err != nil {
+		panic("error reading the file\n")
+	}
 	return &Server{
 		Groups:   groups,
 		Messages: make(map[string][]string, 3),
+		HelloMsg: hellMsg,
 	}
-}
-
-type Server struct {
-	Groups   map[string]Users
-	mutex    sync.Mutex
-	Messages map[string][]string
 }
 
 func (s *Server) WelcomeToTheServer(Conn net.Conn) {
 	defer Conn.Close()
-	Conn.Write([]byte("Welcome to our Server Ener your name:\n"))
+	Conn.Write(s.HelloMsg)
 	Name, group, err := s.GetUserInfo(Conn)
 	if err != nil {
 		return
@@ -59,6 +67,17 @@ func (s *Server) StartChat(Name, group string) {
 			if !bufio.NewScanner(Conn).Scan() {
 				break
 			}
+			continue
+		}
+		if strings.HasPrefix(string(msg), "--name ") && s.invalidName(msg[7:]){
+			EditMessage := fmt.Sprintf("%s now is %s\n", Name, string(msg[7:]))
+			s.mutex.Lock()
+			delete(s.Groups[group], Name)
+			// remove the flag and the newline
+			Name = string(msg[7:len(msg)-1])
+			s.Groups[string(group)][Name] = Conn
+			s.mutex.Unlock()
+			s.WriteMessage(Name, group, EditMessage)
 			continue
 		}
 		message := Format(string(msg), Name)
