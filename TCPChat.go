@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 	defer l.Close()
-	fmt.Println("Listening on the port :", port)
+	fmt.Println("Listening on the port : ", port)
 	Server := netcat.CreateNewServer()
 	for {
 		Conn, err := l.Accept()
