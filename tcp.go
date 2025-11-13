@@ -4,46 +4,73 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"time"
 )
 
-var Users = make(map[string]net.Conn)
+const (
+	Method = "tcp"
+	Port = ":8080"
+)
+
+var (
+	messages = []string{}
+	Conns = map[string]net.Conn{}
+	Addrs = map[string]string{}
+)
 
 func main() {
-	listner, err := net.Listen("tcp", ":8080")
+	listner, err := net.Listen(Method, Port)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	for {
-		Name := []byte{}
+		Name := make([]byte, 1024)
 		con, err := listner.Accept()
 		if err != nil {
 			fmt.Println(err)
-			return
+			continue
 		}
 		con.Write([]byte("write user name : "))
-		_, err = con.Read(Name)
+		i, err := con.Read(Name)
 		if err != nil {
 			continue
 		}
-		Users[string(Name)] = con
+		Name = Name[:i-1]
+		msg := fmt.Sprintf("%s enter the chat", Name)
+		printMessage([]byte(msg), string(Name))
+		Conns[string(Name)] = con
+		writeOldMessages(string(Name))
 		go con_handler(string(Name))
 	}
 }
 
-func con_handler(name string) {
-	con := Users[name]
-	defer con.Close()
-	scanner := bufio.NewScanner(con)
-	msg := []byte{}
-	for scanner.Scan() {
-		con.Read(msg)
-		go printMessage(string(msg), name)
+func writeOldMessages(name string) {
+	for _, message := range messages {
+		printMessage([]byte(message), name)
 	}
 }
 
-func printMessage(msg, name string) {
-	for _, con := range Users {
-		// message := []byte(fmt.Sprintf("[%s]: %s", name, msg))
-		con.Write([]byte("kteb hadxi and kolxi"))
+func con_handler(name string) {
+	con := Conns[name]
+	scanner := bufio.NewScanner(con)
+	for scanner.Scan() {
+		message := scanner.Text()
+		msg := []byte(fmt.Sprintf("[%s]: %s", name, message))
+		messages = append(messages, string(msg))
+		go printMessage(msg, name)
+	}
+	delete(Conns, name)
+	printMessage([]byte(fmt.Sprintf("%s left the chat\n", name)), name)
+}
+
+func printMessage(msg []byte, name string) {
+	msg = append(msg, '\n')
+	year, month, day := time.Now().Date()
+	hour, min, sec:= time.Now().Clock()
+	message := fmt.Sprintf("[%d-%s-%d %d:%d:%d]%s", year, month, day, hour, min, sec, msg)
+	for Name, con := range Conns {
+		if Name == name {continue}
+		con.Write([]byte(message))
 	}
 }
